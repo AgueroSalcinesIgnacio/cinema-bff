@@ -13,16 +13,12 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
   }
 
   const secret: string = process.env.JWT_SECRET!;
-  jwt.verify(token, secret, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ message: "Invalid token" });
-    }
 
-    if (decoded) {
-      (req as CustomRequest).token = decoded;
-      next();
-    }
-  });
-
-  res.status(401).send("Authentication failed");
+  try {
+    const payload = jwt.verify(token, secret);
+    (req as CustomRequest).token = payload;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
 }
